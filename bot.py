@@ -16,6 +16,7 @@ with open('token.txt') as file:
     API_TOKEN=file.readline()
     
 users = [287157997]
+CHAT_ID=users[0]
  
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
@@ -23,18 +24,17 @@ dp = Dispatcher(bot)
 def status(supp_text=''):
     
     url = 'https://bestdavid.ru'
-    resp = req.get(url, verify=False)
-    soup = BeautifulSoup(resp.text, "html.parser")
-
-    title=soup.find_all('title')
     flag=None
     error=None
     try:
+        resp = req.get(url, verify=False)
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        title=soup.find_all('title')
         t = title[0].text
         if 'Jupyter Server'==t:
             flag=True
-        else:
-            flag=False
+            
     except Exception as e:
         flag=False
         error=e
@@ -48,12 +48,15 @@ def status(supp_text=''):
         grep_flag=True
         
     if flag:
-        text='Jupyter server web status: WORKS\n'
+        text='Https web status:      WORKS\n'
     else:
-        text=f'Jupyter server web status: BROKEN\nError{error}\n'
+        text=f'Https web status:      BROKEN\n'
     
-    text=text+f'Jupyter server process status: {grep_flag}\n'
-    text=text+'\n'+stdout
+    text=text+f'Jupyter server process status:      {grep_flag}\n'
+    text=text+'\nProcesses:\n'+stdout+'\n'
+    
+    text=text+f'\nErrors: {error}\n'
+    text=text+ '\n/status\n/start\n/stop\n'
     
     return text
                 
@@ -92,6 +95,12 @@ async def send_stop(message: types.Message):
         text=status()
         await message.answer('Server stopped')
         await message.answer(text)
+        
+async def on_startup(dp):
+    # Send a message when the bot starts
+    text="Bot has started"
+    text=text+ '\n\n/status\n/start\n/stop\n'
+    await bot.send_message(chat_id=CHAT_ID, text=text)
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
