@@ -47,13 +47,10 @@ def status(supp_text=''):
     if "/bin/bash ./jupyter_start.sh" in stdout:
         grep_flag=True
         
-    if flag:
-        text='Https web status:      WORKS\n'
-    else:
-        text=f'Https web status:      BROKEN\n'
-    
+
+    text=f'Https web status:      {flag}\n'
     text=text+f'Jupyter server process status:      {grep_flag}\n'
-    text=text+'\nProcesses:\n'+stdout+'\n'
+    text=text+'\nProcesses:\n\n'+stdout+'\n'
     
     text=text+f'\nErrors: {error}\n'
     text=text+ '\n/status\n/start\n/stop\n'
