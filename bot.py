@@ -64,6 +64,7 @@ async def send_status(message: types.Message, supp_text=''):
     if message.chat.id not in users:
         await message.answer('Access restricted')
     else:
+        await message.answer('Collecting status info')
         text=status()
         await message.answer(text)
 
