@@ -9,6 +9,7 @@ import os
 import signal
 import subprocess
 import psutil
+import time
 
 nest_asyncio.apply()
 
@@ -74,7 +75,9 @@ async def send_start(message: types.Message):
     if message.chat.id not in users:
         await message.answer('Access restricted')
     else:
+        await message.answer('Server starting')
         process=subprocess.Popen(f'jupyter_wsl.bat', cwd='D:/python/home_bot/')
+        time.sleep(2)
         text=status()
         await message.answer('Server started')
         await message.answer(text)
@@ -85,6 +88,7 @@ async def send_stop(message: types.Message):
     if message.chat.id not in users:
         await message.answer('Access restricted')
     else:
+        await message.answer('Server stopping')
         with open('wsl_jupyter_stop.txt') as file:
             commands=file.readline()
         subprocess.run(commands)
