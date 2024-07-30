@@ -11,6 +11,8 @@ import subprocess
 import psutil
 import time
 from datetime import datetime, timedelta
+from subprocess import check_output, STDOUT
+import re
 
 nest_asyncio.apply()
 
@@ -60,6 +62,32 @@ def status(supp_text=''):
     
     d = timedelta(seconds= time.time() - psutil.boot_time() )
     text=text + f'\nUptime windows {d.days:02d}:{d.seconds//3600:02d}:{(d.seconds//60)%60:02d}:{d.seconds % 60:02}\n'
+    
+    res=subprocess.run('wmic ComputerSystem get TotalPhysicalMemory', capture_output=True).stdout.decode('utf-8')
+    res=int(re.sub("[^0-9]", "", res))
+    total_memory=int(res)/(1024**3)
+    
+    res=subprocess.run('wmic OS get FreePhysicalMemory', capture_output=True).stdout.decode('utf-8')
+    res=int(re.sub("[^0-9]", "", res))
+    available_memory=int(res)/(1024**2)
+    
+    available_windows_memory=total_memory-available_memory
+    
+    text=text+ f'\nTotal windows memory: {total_memory:.2f} GiB'
+    text=text+ f'\nAvailable  windows memory: {available_memory:.2f} GiB'
+    text=text+ f'\nUsed  windows memory: {available_windows_memory:.2f} GiB\n'
+    
+    res=subprocess.run('wsl -e bash -c "echo $(($(getconf _PHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))" ', capture_output=True)
+    total_memory=int(res.stdout.decode('utf-8'))/1024
+    
+    res=subprocess.run('wsl -e bash -c "echo $(($(getconf _AVPHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))" ', capture_output=True)
+    available_memory=int(res.stdout.decode('utf-8'))/1024
+    
+    text=text+ f'\nTotal wsl memory: {total_memory:.2f} GiB'
+    text=text+ f'\nAvailable  wsl memory: {available_memory:.2f} GiB'
+    text=text+ f'\nUsed  wsl memory: {(total_memory-available_memory):.2f} GiB\n'
+    
+    text=text+ f'\nOnly windows used memory: {(available_windows_memory-total_memory+available_memory):.2f} GiB\n'
     
     text=text+ f'\n{commands}\n'
     
