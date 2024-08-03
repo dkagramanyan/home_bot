@@ -25,7 +25,7 @@ CHAT_ID=users[0]
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-commands='/status\n/start_lab\n/stop_lab\n/reboot_windows'
+commands='/status\n/start_lab\n/stop_lab\n/start_hub\n/stop_hub\n/reboot_windows'
 
 def status(supp_text=''):
     
@@ -45,19 +45,28 @@ def status(supp_text=''):
         flag=False
         error=e
     
-    # res=subprocess.run('wsl -e bash -c " ps ax | grep "/bin/bash ./jupyter_start.sh"" ', capture_output=True)
-    res=subprocess.run('wsl -e bash -c "ps ax | grep "/jupyter-lab" " ', capture_output=True)
+    text=f'Https JupyterLab status:      {flag}\n'
+    
+    search_name="/bin/jupyter-lab"
+    res=subprocess.run(f'wsl -e bash -c "ps ax | grep "{search_name}" " ', capture_output=True)
     stdout=res.stdout.decode('utf-8')
     grep_flag=False
     
-    search_name="/bin/jupyter-lab"
+    if search_name in stdout:
+        grep_flag=True
+
+    # text=text+f'\nJupyterLab process status:      {grep_flag}\n'
+    text=text+f'\nProcesses for {search_name} grep:\n\n'+stdout
+    
+    search_name="/bin/jupyterhub"
+    res=subprocess.run(f'wsl -e bash -c "ps ax | grep "{search_name}" " ', capture_output=True)
+    stdout=res.stdout.decode('utf-8')
+    grep_flag=False
     
     if search_name in stdout:
         grep_flag=True
-        
 
-    text=f'Https JupyterLab status:      {flag}\n'
-    text=text+f'Jupyter server process status:      {grep_flag}\n'
+    # text=text+f'\nJupyterHub process status:      {grep_flag}\n'
     text=text+f'\nProcesses for {search_name} grep:\n\n'+stdout
     
     text=text+f'\nErrors: {error}\n'
@@ -139,7 +148,8 @@ async def send_start(message: types.Message):
         await message.answer('Access restricted')
     else:
         await message.answer('JupyterHub server starting')
-        process=subprocess.Popen(f'windows_wsl_jupyterhub_start.bat', cwd='D:/python/home_bot/')
+        script='@echo off & wsl -e bash -c "cd; source ~/anaconda3/etc/profile.d/conda.sh; conda activate torch; jupyterhub"'
+        subprocess.Popen('cmd.exe /k ' + script)
         time.sleep(2)
         text=status()
         await message.answer('JupyterHub server started')
@@ -152,10 +162,7 @@ async def send_stop(message: types.Message):
         await message.answer('Access restricted')
     else:
         await message.answer('JupyterHub server stopping')
-        with open('windows_wsl_jupyterhub_stop.txt') as file:
-            commands=file.readline()
-        subprocess.run(commands)
-        
+        subprocess.run('wsl -e bash -c "kill $(ps aux | grep \'jupyterhub\' | awk \'{print $2}\')"')
         text=status()
         await message.answer('JupyterHub server stopped')
         await message.answer(text)
