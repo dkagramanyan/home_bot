@@ -25,7 +25,7 @@ CHAT_ID=users[0]
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-commands='/status\n/start\n/stop\n/reboot'
+commands='/status\n/start_lab\n/stop_lab\n/reboot_windows'
 
 def status(supp_text=''):
     
@@ -46,11 +46,11 @@ def status(supp_text=''):
         error=e
     
     # res=subprocess.run('wsl -e bash -c " ps ax | grep "/bin/bash ./jupyter_start.sh"" ', capture_output=True)
-    res=subprocess.run('wsl -e bash -c " ps ax | grep "./jupyter_start.sh"" ', capture_output=True)
+    res=subprocess.run('wsl -e bash -c "ps ax | grep "/jupyter-lab" " ', capture_output=True)
     stdout=res.stdout.decode('utf-8')
     grep_flag=False
 
-    if "/bin/bash ./jupyter_start.sh" in stdout:
+    if "/bin/jupyter-lab" in stdout:
         grep_flag=True
         
 
@@ -104,34 +104,62 @@ async def send_status(message: types.Message, supp_text=''):
         await message.answer(text)
 
         
-@dp.message_handler(commands=['start'])
+@dp.message_handler(commands=['start_lab'])
 async def send_start(message: types.Message):
     if message.chat.id not in users:
         await message.answer('Access restricted')
     else:
-        await message.answer('Server starting')
-        process=subprocess.Popen(f'jupyter_wsl.bat', cwd='D:/python/home_bot/')
+        await message.answer('JupyterLab server starting')
+        process=subprocess.Popen(f'windows_wsl_jupyterlab_start.bat', cwd='D:/python/home_bot/')
         time.sleep(2)
         text=status()
-        await message.answer('Server started')
+        await message.answer('JupyterLab server started')
         await message.answer(text)
         
         
-@dp.message_handler(commands=['stop'])
+@dp.message_handler(commands=['stop_lab'])
 async def send_stop(message: types.Message):
     if message.chat.id not in users:
         await message.answer('Access restricted')
     else:
-        await message.answer('Server stopping')
-        with open('wsl_jupyter_stop.txt') as file:
+        await message.answer('JupyterLab server stopping')
+        with open('windows_wsl_jupyterlab_stop.txt') as file:
+            commands=file.readline()
+        
+        subprocess.run('wsl -e bash -c "kill $(ps aux | grep \'jupyter-lab\' | awk \'{print $2}\')"')
+        
+        text=status()
+        await message.answer('JupyterLab server stopped')
+        await message.answer(text)
+        
+@dp.message_handler(commands=['start_hub'])
+async def send_start(message: types.Message):
+    if message.chat.id not in users:
+        await message.answer('Access restricted')
+    else:
+        await message.answer('JupyterHub server starting')
+        process=subprocess.Popen(f'windows_wsl_jupyterhub_start.bat', cwd='D:/python/home_bot/')
+        time.sleep(2)
+        text=status()
+        await message.answer('JupyterHub server started')
+        await message.answer(text)
+        
+        
+@dp.message_handler(commands=['stop_hub'])
+async def send_stop(message: types.Message):
+    if message.chat.id not in users:
+        await message.answer('Access restricted')
+    else:
+        await message.answer('JupyterHub server stopping')
+        with open('windows_wsl_jupyterhub_stop.txt') as file:
             commands=file.readline()
         subprocess.run(commands)
         
         text=status()
-        await message.answer('Server stopped')
+        await message.answer('JupyterHub server stopped')
         await message.answer(text)
         
-@dp.message_handler(commands=['reboot'])
+@dp.message_handler(commands=['reboot_windows'])
 async def send_reboot(message: types.Message):
     if message.chat.id not in users:
         await message.answer('Access restricted')
