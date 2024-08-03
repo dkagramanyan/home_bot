@@ -1,1 +1,0 @@
-wsl -e bash -c "kill $(ps aux | grep 'jupyter-lab' | awk '{print $2}')"
