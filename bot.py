@@ -49,14 +49,16 @@ def status(supp_text=''):
     res=subprocess.run('wsl -e bash -c "ps ax | grep "/jupyter-lab" " ', capture_output=True)
     stdout=res.stdout.decode('utf-8')
     grep_flag=False
-
-    if "/bin/jupyter-lab" in stdout:
+    
+    search_name="/bin/jupyter-lab"
+    
+    if search_name in stdout:
         grep_flag=True
         
 
-    text=f'Https web status:      {flag}\n'
+    text=f'Https JupyterLab status:      {flag}\n'
     text=text+f'Jupyter server process status:      {grep_flag}\n'
-    text=text+'\nProcesses:\n\n'+stdout
+    text=text+f'\nProcesses for {search_name} grep:\n\n'+stdout
     
     text=text+f'\nErrors: {error}\n'
     
@@ -110,7 +112,10 @@ async def send_start(message: types.Message):
         await message.answer('Access restricted')
     else:
         await message.answer('JupyterLab server starting')
-        process=subprocess.Popen(f'windows_wsl_jupyterlab_start.bat', cwd='D:/python/home_bot/')
+        # process=subprocess.Popen(f'windows_wsl_jupyterlab_start.bat', cwd='D:/python/home_bot/')
+        script='@echo off & wsl -e bash -c "cd; source ~/anaconda3/etc/profile.d/conda.sh; conda activate torch; jupyter lab"'
+
+        subprocess.Popen('cmd.exe /k ' + script)
         time.sleep(2)
         text=status()
         await message.answer('JupyterLab server started')
@@ -123,11 +128,7 @@ async def send_stop(message: types.Message):
         await message.answer('Access restricted')
     else:
         await message.answer('JupyterLab server stopping')
-        with open('windows_wsl_jupyterlab_stop.txt') as file:
-            commands=file.readline()
-        
         subprocess.run('wsl -e bash -c "kill $(ps aux | grep \'jupyter-lab\' | awk \'{print $2}\')"')
-        
         text=status()
         await message.answer('JupyterLab server stopped')
         await message.answer(text)
