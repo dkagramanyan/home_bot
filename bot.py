@@ -91,14 +91,17 @@ def status(supp_text=''):
     res=subprocess.run('wsl -e bash -c "echo $(($(getconf _PHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))" ', capture_output=True)
     total_memory=int(res.stdout.decode('utf-8'))/1024
     
-    res=subprocess.run('wsl -e bash -c "echo $(($(getconf _AVPHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))" ', capture_output=True)
-    available_memory=int(res.stdout.decode('utf-8'))/1024
+    # res=subprocess.run('wsl -e bash -c "echo $(($(getconf _AVPHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))" ', capture_output=True)
+    # available_memory=int(res.stdout.decode('utf-8'))/1024
+    res = subprocess.run(['wsl', '-e', 'bash', '-c', 'ps -eo rss | awk \'{sum+=$1} END {print sum/1024}\''], capture_output=True, text=True)
+    available_memory = int(res.stdout.split('.')[0])/1024
     
     text=text+ f'\nTotal wsl memory: {total_memory:.2f} GiB'
     text=text+ f'\nAvailable  wsl memory: {available_memory:.2f} GiB'
     text=text+ f'\nUsed  wsl memory: {(total_memory-available_memory):.2f} GiB\n'
     
-    text=text+ f'\nOnly windows used memory: {(available_windows_memory-total_memory+available_memory):.2f} GiB\n'
+    # works incorrect
+    # text=text+ f'\nOnly windows used memory: {(available_windows_memory-total_memory+available_memory):.2f} GiB\n'
     
     text=text+ f'\n{commands}\n'
     
