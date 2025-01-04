@@ -118,32 +118,32 @@ async def send_status(message: types.Message, supp_text=''):
         await message.answer(text)
 
         
-@dp.message_handler(commands=['start_lab'])
-async def send_start(message: types.Message):
-    if message.chat.id not in users:
-        await message.answer('Access restricted')
-    else:
-        await message.answer('JupyterLab server starting')
-        # process=subprocess.Popen(f'windows_wsl_jupyterlab_start.bat', cwd='D:/python/home_bot/')
-        script='@echo off & wsl -e bash -c "cd; source ~/anaconda3/etc/profile.d/conda.sh; conda activate torch; jupyter lab"'
+# @dp.message_handler(commands=['start_lab'])
+# async def send_start(message: types.Message):
+#     if message.chat.id not in users:
+#         await message.answer('Access restricted')
+#     else:
+#         await message.answer('JupyterLab server starting')
+#         # process=subprocess.Popen(f'windows_wsl_jupyterlab_start.bat', cwd='D:/python/home_bot/')
+#         script='@echo off & wsl -e bash -c "cd; source ~/anaconda3/etc/profile.d/conda.sh; conda activate torch; jupyter lab"'
 
-        subprocess.Popen('cmd.exe /k ' + script)
-        time.sleep(2)
-        text=status()
-        await message.answer('JupyterLab server started')
-        await message.answer(text)
+#         subprocess.Popen('cmd.exe /k ' + script)
+#         time.sleep(2)
+#         text=status()
+#         await message.answer('JupyterLab server started')
+#         await message.answer(text)
         
         
-@dp.message_handler(commands=['stop_lab'])
-async def send_stop(message: types.Message):
-    if message.chat.id not in users:
-        await message.answer('Access restricted')
-    else:
-        await message.answer('JupyterLab server stopping')
-        subprocess.run('wsl -e bash -c "kill $(ps aux | grep \'jupyter-lab\' | awk \'{print $2}\')"')
-        text=status()
-        await message.answer('JupyterLab server stopped')
-        await message.answer(text)
+# @dp.message_handler(commands=['stop_lab'])
+# async def send_stop(message: types.Message):
+#     if message.chat.id not in users:
+#         await message.answer('Access restricted')
+#     else:
+#         await message.answer('JupyterLab server stopping')
+#         subprocess.run('wsl -e bash -c "kill $(ps aux | grep \'jupyter-lab\' | awk \'{print $2}\')"')
+#         text=status()
+#         await message.answer('JupyterLab server stopped')
+#         await message.answer(text)
         
 @dp.message_handler(commands=['start_hub'])
 async def send_start(message: types.Message):
@@ -151,7 +151,7 @@ async def send_start(message: types.Message):
         await message.answer('Access restricted')
     else:
         await message.answer('JupyterHub server starting')
-        script='@echo off & wsl -e bash -c "cd; source ~/anaconda3/etc/profile.d/conda.sh; conda activate torch; jupyterhub"'
+        script='@echo off & wsl -d ubuntu24 -e bash -c "cd; source ~/anaconda3/etc/profile.d/conda.sh; conda activate torch; cd jupyterhub; jupyterhub"'
         subprocess.Popen('cmd.exe /k ' + script)
         time.sleep(2)
         text=status()
@@ -165,7 +165,7 @@ async def send_stop(message: types.Message):
         await message.answer('Access restricted')
     else:
         await message.answer('JupyterHub server stopping')
-        subprocess.run('wsl -e bash -c "kill $(ps aux | grep \'jupyterhub\' | awk \'{print $2}\')"')
+        subprocess.run('wsl -d ubuntu24 -e bash -c "kill $(ps aux | grep \'jupyterhub\' | awk \'{print $2}\')"')
         text=status()
         await message.answer('JupyterHub server stopped')
         await message.answer(text)
