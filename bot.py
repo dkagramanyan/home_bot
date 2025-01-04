@@ -29,26 +29,27 @@ commands='/status\n/start_lab\n/stop_lab\n/start_hub\n/stop_hub\n/reboot_windows
 
 def status(supp_text=''):
     
-    url = 'https://bestdavid.ru'
-    flag=None
-    error=None
-    try:
-        resp = req.get(url, verify=False)
-        soup = BeautifulSoup(resp.text, "html.parser")
+    # url = 'https://bestdavid.ru'
+    # flag=None
+    # error=None
+    # try:
+    #     resp = req.get(url, verify=False)
+    #     soup = BeautifulSoup(resp.text, "html.parser")
 
-        title=soup.find_all('title')
-        t = title[0].text
-        if 'Jupyter Server'==t:
-            flag=True
+    #     title=soup.find_all('title')
+    #     t = title[0].text
+    #     if 'Jupyter Server'==t:
+    #         flag=True
             
-    except Exception as e:
-        flag=False
-        error=e
+    # except Exception as e:
+    #     flag=False
+    #     error=e
     
-    text=f'Https JupyterLab status:      {flag}\n'
+    # text=f'Https JupyterLab status:      {flag}\n'
+    text=""
     
     search_name="/bin/jupyter-lab"
-    res=subprocess.run(f'wsl -e bash -c "ps ax | grep "{search_name}" " ', capture_output=True)
+    res=subprocess.run(f'wsl -d ubuntu24 -e bash -c "ps ax | grep "{search_name}" " ', capture_output=True)
     stdout=res.stdout.decode('utf-8')
     grep_flag=False
     
@@ -59,7 +60,7 @@ def status(supp_text=''):
     text=text+f'\nProcesses for {search_name} grep:\n\n'+stdout
     
     search_name="/bin/jupyterhub"
-    res=subprocess.run(f'wsl -e bash -c "ps ax | grep "{search_name}" " ', capture_output=True)
+    res=subprocess.run(f'wsl -d ubuntu24 -e bash -c "ps ax | grep "{search_name}" " ', capture_output=True)
     stdout=res.stdout.decode('utf-8')
     grep_flag=False
     
@@ -69,7 +70,7 @@ def status(supp_text=''):
     # text=text+f'\nJupyterHub process status:      {grep_flag}\n'
     text=text+f'\nProcesses for {search_name} grep:\n\n'+stdout
     
-    text=text+f'\nErrors: {error}\n'
+    # text=text+f'\nErrors: {error}\n'
     
     d = timedelta(seconds= time.time() - psutil.boot_time() )
     text=text + f'\nUptime windows {d.days:02d}:{d.seconds//3600:02d}:{(d.seconds//60)%60:02d}:{d.seconds % 60:02}\n'
@@ -88,17 +89,17 @@ def status(supp_text=''):
     text=text+ f'\nAvailable  windows memory: {available_memory:.2f} GiB'
     text=text+ f'\nUsed  windows memory: {available_windows_memory:.2f} GiB\n'
     
-    res=subprocess.run('wsl -e bash -c "echo $(($(getconf _PHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))" ', capture_output=True)
-    total_memory=int(res.stdout.decode('utf-8'))/1024
+    # res=subprocess.run('wsl -d ubuntu24 -e bash -c "echo $(($(getconf _PHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))" ', capture_output=True)
+    # total_memory=int(res.stdout.decode('utf-8'))/1024
     
     # res=subprocess.run('wsl -e bash -c "echo $(($(getconf _AVPHYS_PAGES) * $(getconf PAGE_SIZE) / (1024 * 1024)))" ', capture_output=True)
     # available_memory=int(res.stdout.decode('utf-8'))/1024
-    res = subprocess.run(['wsl', '-e', 'bash', '-c', 'ps -eo rss | awk \'{sum+=$1} END {print sum/1024}\''], capture_output=True, text=True)
-    available_memory = int(res.stdout.split('.')[0])/1024
+    # res = subprocess.run(['wsl', '-e', 'bash', '-c', 'ps -eo rss | awk \'{sum+=$1} END {print sum/1024}\''], capture_output=True, text=True)
+    # available_memory = int(res.stdout.split('.')[0])/1024
     
-    text=text+ f'\nTotal wsl memory: {total_memory:.2f} GiB'
-    text=text+ f'\nAvailable  wsl memory: {available_memory:.2f} GiB'
-    text=text+ f'\nUsed  wsl memory: {(total_memory-available_memory):.2f} GiB\n'
+    # text=text+ f'\nTotal wsl memory: {total_memory:.2f} GiB'
+    # text=text+ f'\nAvailable  wsl memory: {available_memory:.2f} GiB'
+    # text=text+ f'\nUsed  wsl memory: {(total_memory-available_memory):.2f} GiB\n'
     
     # works incorrect
     # text=text+ f'\nOnly windows used memory: {(available_windows_memory-total_memory+available_memory):.2f} GiB\n'
